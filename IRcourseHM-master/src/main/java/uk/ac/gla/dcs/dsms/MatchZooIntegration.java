@@ -14,7 +14,9 @@ import org.terrier.structures.*;
  * @author Joseph Moukarzel
  */
 public class MatchZooIntegration {
+    
 
+    private int blabla;
     private String pahToQrels;
     private String outputRelation;
     private Index index;
