@@ -10,20 +10,18 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Map;
 import java.util.StringTokenizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.terrier.indexing.tokenisation.EnglishTokeniser;
 import org.terrier.matching.ResultSet;
 import org.terrier.querying.SearchRequest;
 import org.terrier.structures.DocumentIndex;
 import org.terrier.structures.Index;
 import org.terrier.structures.Lexicon;
-import org.terrier.structures.LexiconEntry;
 import org.terrier.structures.Pointer;
 import org.terrier.structures.PostingIndex;
 import org.terrier.structures.outputformat.*;
-import org.terrier.structures.postings.IterablePosting;
 import org.terrier.utility.ApplicationSetup;
 
 /**
@@ -72,7 +70,7 @@ public class MatchZooOutputFormat implements OutputFormat {
             path_to_results = path + File.separatorChar + "var" + File.separatorChar + "results" + File.separatorChar;
         }
 
-        FileWriter fw = new FileWriter(path_to_results + "queries_preprocessed.txt", true);
+        FileWriter fw = new FileWriter(path_to_results + "corpus_preprocessed.txt", true);
         BufferedWriter bw = new BufferedWriter(fw);
         Lexicon<String> lex = index.getLexicon();
         String[] query_terms = q.getQuery().toString().split(" ");
@@ -82,44 +80,18 @@ public class MatchZooOutputFormat implements OutputFormat {
         sb.append(" ");
         sb.append("" + query_terms.length);
         for (String s : query_terms) {
-            sb.append(" ");
             if (lex.getLexiconEntry(s) != null) {
+                sb.append(" ");
                 sb.append(lex.getLexiconEntry(s).getTermId());
             }
         }
-         sb.append('\n');
+        sb.append('\n');
         bw.write(sb.toString());
         bw.flush();
         final int[] docids = set.getDocids();
-        sb = new StringBuilder();
 
-        int counter;
-        for (int docid = 0; docid < docids.length; ++docid) {
-            counter = 0;
-
-            IterablePosting postings = dir.getPostings(doi.getDocumentEntry(docids[docid]));
-            sb.append("D");
-            sb.append(docids[docid]);
-            sb.append(" ");
-            if (doi.getDocumentLength(docids[docid]) > 50) {
-                sb.append(50);
-            } else {
-                sb.append(doi.getDocumentLength(docids[docid]));
-            }
-            
-            
-            while (postings.next() != IterablePosting.EOL && counter < 50) {
-                Map.Entry<String, LexiconEntry> lee = lex.getLexiconEntry(postings.getId());
-                sb.append(" ");
-                sb.append(postings.getId());
-                ++counter;
-            }
-            sb.append("\n");
-            bw.write(sb.toString());
-            bw.flush();
-            sb = new StringBuilder();
-
-        }
+        MatchZooDocumentRepresentor mzdr = new MatchZooDocumentRepresentor(index, bw, docids, new EnglishTokeniser(), path_to_results + "tmp_file.txt");
+        mzdr.writeRepresentation();
 
         bw.close();
 

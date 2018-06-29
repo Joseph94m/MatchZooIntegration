@@ -51,28 +51,27 @@ public class MatchZooRunner {
         List<CSVRecord> records = parser.getRecords();
         Map<String, Integer> docnos = new HashMap<>();
         PostingIndex<Pointer> dir = (PostingIndex<Pointer>) index.getDirectIndex();
-//        for (int i = 0; i < di.getNumberOfDocuments(); ++i) {
-//            docnos.put(mi.getItem("docno", i), i);
-//        }
-//        for (int j = 0; j < records.size(); ++j) {
-//            int doc = docnos.get(records.get(j).get(2));
-//            sb.append(records.get(j).get(3));
-//            sb.append(' ');
-//            sb.append("Q");
-//            sb.append(records.get(j).get(0));
-//            sb.append(' ');
-//            sb.append("D");
-//            sb.append(doc);
-//            sb.append('\n');
-//        }
-//        pw.write(sb.toString());
-//        pw.flush();
-//        pw.close();
-
-//        Map< Integer, String> bodies = new HashMap<>();
-//        for (int i = 0; i < di.getNumberOfDocuments(); ++i) {
-//            bodies.put(i, mi.getItem("bodies", i));
-//        }
+        for (int i = 0; i < di.getNumberOfDocuments(); ++i) {
+            docnos.put(mi.getItem("docno", i), i);
+        }
+        for (int j = 0; j < records.size(); ++j) {
+            int doc = docnos.get(records.get(j).get(2));
+            sb.append(records.get(j).get(3));
+            sb.append(' ');
+            sb.append("Q");
+            sb.append(records.get(j).get(0));
+            sb.append(' ');
+            sb.append("D");
+            sb.append(doc);
+            sb.append('\n');
+        }
+        pw.write(sb.toString());
+        pw.flush();
+        pw.close();
+        Map< Integer, String> bodies = new HashMap<>();
+        for (int i = 0; i < di.getNumberOfDocuments(); ++i) {
+            bodies.put(i, mi.getItem("bodies", i));
+        }
 
         FileWriter fw = new FileWriter(new File("C:\\Users\\Joseph\\Desktop\\Studies\\Semester2\\IR\\qrels\\documents_preprocessed.txt"), true);
         BufferedWriter pw2 = new BufferedWriter(fw);
