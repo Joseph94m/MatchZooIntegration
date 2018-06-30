@@ -90,8 +90,8 @@ public class MatchZooOutputFormat implements OutputFormat {
         bw.flush();
         final int[] docids = set.getDocids();
 
-        MatchZooDocumentRepresentor mzdr = new MatchZooDocumentRepresentor(index, bw, docids, new EnglishTokeniser(), path_to_results + "tmp_file.txt");
-        mzdr.writeRepresentation();
+        //MatchZooDocumentRepresentor mzdr = new MatchZooDocumentRepresentor(index, bw, docids, new EnglishTokeniser(), path_to_results + "tmp_file.txt",true,50);
+       // mzdr.writeRepresentation();
 
         bw.close();
 

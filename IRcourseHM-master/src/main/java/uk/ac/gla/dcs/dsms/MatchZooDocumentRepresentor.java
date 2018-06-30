@@ -44,16 +44,21 @@ public class MatchZooDocumentRepresentor {
     private BufferedReader r;
     private BufferedWriter w;
     final String tmp_file;
+    final private boolean checkDuplicates;
+    final int docSize;
 
-    public MatchZooDocumentRepresentor(Index index, Writer bw, int[] docids, Tokeniser tk, String tmp_file) throws FileNotFoundException, IOException {
+    public MatchZooDocumentRepresentor(Index index, Writer bw, int[] docids, Tokeniser tk, String tmp_file, boolean checkDuplicates, int docSize) throws FileNotFoundException, IOException {
         this.index = index;
         this.bw = bw;
         this.docids = docids;
         this.tk = tk;
         this.tmp_file = tmp_file;
+        this.checkDuplicates=checkDuplicates;
+        this.docSize=docSize;
     }
 
     private String represent() throws IOException {
+        
         MetaIndex mi = index.getMetaIndex();
         Lexicon<String> lex = index.getLexicon();
         StringBuilder sb = new StringBuilder();
@@ -67,15 +72,20 @@ public class MatchZooDocumentRepresentor {
             w = new BufferedWriter(new FileWriter(tmp_file, true));
             w.close();
         }
+        if(checkDuplicates){
         r = new BufferedReader(new FileReader(tmp_file));
 
         while ((line = r.readLine()) != null) {
-            System.out.println(line);
             docs.add(line);
         }
         r.close();
-
+        }
+        long now = System.nanoTime();
         for (int i = 0; i < docids.length; ++i) {
+            if(i % 1000 == 0){
+                System.out.println(i);
+                System.out.println((System.nanoTime() - now)*1.667 * 0.00000000001);
+            }
             if (docs.contains("D" + docids[i])) {
                 break;
             }
@@ -90,12 +100,11 @@ public class MatchZooDocumentRepresentor {
             sb2.append(docids[i]);
             sb2.append('\n');
             for (String t : tokenized_body) {
-                if (token_count == 50) {
+                if (token_count == docSize) {
                     break;
                 }
                 LexiconEntry le = lex.getLexiconEntry(t);
                 if (le == null) {
-                    System.out.println(t);
                 } else {
                     ++token_count;
                     tmp_body.append(" ");
