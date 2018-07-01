@@ -42,53 +42,31 @@ public class MatchZooDocumentRepresentor {
     final private int[] docids;
     final private Tokeniser tk;
     private BufferedReader r;
-    private BufferedWriter w;
-    final String tmp_file;
-    final private boolean checkDuplicates;
     final int docSize;
+    boolean[] iterated;
 
-    public MatchZooDocumentRepresentor(Index index, Writer bw, int[] docids, Tokeniser tk, String tmp_file, boolean checkDuplicates, int docSize) throws FileNotFoundException, IOException {
+    public MatchZooDocumentRepresentor(Index index, Writer bw, int[] docids, Tokeniser tk, int docSize, boolean[] iterated) throws FileNotFoundException, IOException {
         this.index = index;
         this.bw = bw;
         this.docids = docids;
         this.tk = tk;
-        this.tmp_file = tmp_file;
-        this.checkDuplicates=checkDuplicates;
-        this.docSize=docSize;
+        this.docSize = docSize;
+        this.iterated = iterated;
     }
 
     private String represent() throws IOException {
-        
+
         MetaIndex mi = index.getMetaIndex();
         Lexicon<String> lex = index.getLexicon();
         StringBuilder sb = new StringBuilder();
         StringBuilder tmp_body;
         StringBuilder sb2 = new StringBuilder();
         int token_count;
-        String line;
-        Set<String> docs = new HashSet<String>();
-        File tmpDir = new File(tmp_file);
-        if (!tmpDir.exists()) {
-            w = new BufferedWriter(new FileWriter(tmp_file, true));
-            w.close();
-        }
-        if(checkDuplicates){
-        r = new BufferedReader(new FileReader(tmp_file));
-
-        while ((line = r.readLine()) != null) {
-            docs.add(line);
-        }
-        r.close();
-        }
-        long now = System.nanoTime();
         for (int i = 0; i < docids.length; ++i) {
-            if(i % 1000 == 0){
-                System.out.println(i);
-                System.out.println((System.nanoTime() - now)*1.667 * 0.00000000001);
+            if (iterated[docids[i]] == true) {
+                continue;
             }
-            if (docs.contains("D" + docids[i])) {
-                break;
-            }
+            iterated[docids[i]] = true;
             token_count = 0;
             tmp_body = new StringBuilder();
             String body = mi.getItem("body", docids[i]);
@@ -117,10 +95,6 @@ public class MatchZooDocumentRepresentor {
             sb.append('\n');
 
         }
-        w = new BufferedWriter(new FileWriter(tmp_file, true));
-        w.write(sb2.toString());
-        w.flush();
-        w.close();
         return sb.toString();
     }
 

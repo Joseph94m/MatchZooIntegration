@@ -5,56 +5,22 @@
  */
 package uk.ac.gla.dcs.dsms;
 
+import java.io.IOException;
 import org.terrier.structures.*;
 
 /**
- * 
+ *
  *
  *
  * @author Joseph Moukarzel
  */
 public class MatchZooIntegration {
-    
 
-    private String pahToQrels;
-    private String outputRelation;
-    private Index index;
-
-    public MatchZooIntegration(String pathToIndex, String pathToQrels, String outputRelation) {
-        this.pahToQrels = pathToQrels;
-        this.outputRelation = outputRelation;
-        index = Index.createIndex(pathToIndex, "data");
-
-    }
-
-    public MatchZooIntegration(Index i, String pathToQrels, String outputRelation) {
-        index = i;
-        this.pahToQrels = pathToQrels;
-        this.outputRelation = outputRelation;
-    }
-
-    public String getPahToQrels() {
-        return pahToQrels;
-    }
-
-    public void setPahToQrels(String pahToQrels) {
-        this.pahToQrels = pahToQrels;
-    }
-
-    public String getOutputRelation() {
-        return outputRelation;
-    }
-
-    public void setOutputRelation(String outputRelation) {
-        this.outputRelation = outputRelation;
-    }
-
-    public Index getIndex() {
-        return index;
-    }
-
-    public void setIndex(Index index) {
-        this.index = index;
+    public static void main(String[] args) throws IOException {
+        QrelsFormatModifier mz = new QrelsFormatModifier("C:\\Users\\Joseph\\Desktop\\Studies\\Semester2\\IR\\terrier-core-4.2\\var\\index",
+                "C:\\Users\\Joseph\\Desktop\\Studies\\Semester2\\IR\\qrels\\qrels.robust2004.txt",
+                "C:\\Users\\Joseph\\Desktop\\Studies\\Semester2\\IR\\terrier-core-4.2\\var\\results\\relation.txt");
+        mz.writeQrels();
     }
 
 }

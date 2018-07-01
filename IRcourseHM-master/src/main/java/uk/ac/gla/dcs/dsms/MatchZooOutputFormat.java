@@ -35,12 +35,15 @@ public class MatchZooOutputFormat implements OutputFormat {
      */
     protected static final Logger logger = LoggerFactory.getLogger(TRECDocidOutputFormat.class);
     final Index index;
+    boolean[] iterated;
+    QrelsToDocumentRepresentor qr ;
 
     /**
      * Creates a new TRECDocidOutputFormat. The index object is ignored
      */
     public MatchZooOutputFormat(Index index) {
         this.index = index;
+        iterated = new boolean[index.getDocumentIndex().getNumberOfDocuments()];
     }
 
     /**
@@ -53,7 +56,6 @@ public class MatchZooOutputFormat implements OutputFormat {
      */
     public void printResults(final PrintWriter pw, final SearchRequest q,
             String method, String iteration, int _RESULTS_LENGTH) throws IOException {
-
         final ResultSet set = q.getResultSet();
         PostingIndex<Pointer> dir = (PostingIndex<Pointer>) index.getDirectIndex();
         String path = new File("").getAbsolutePath();
@@ -70,6 +72,7 @@ public class MatchZooOutputFormat implements OutputFormat {
             path_to_results = path + File.separatorChar + "var" + File.separatorChar + "results" + File.separatorChar;
         }
 
+        int count_tokens = 0;
         FileWriter fw = new FileWriter(path_to_results + "corpus_preprocessed.txt", true);
         BufferedWriter bw = new BufferedWriter(fw);
         Lexicon<String> lex = index.getLexicon();
@@ -78,8 +81,17 @@ public class MatchZooOutputFormat implements OutputFormat {
         sb.append("Q");
         sb.append(q.getQueryID());
         sb.append(" ");
-        sb.append("" + query_terms.length);
+
         for (String s : query_terms) {
+
+            if (lex.getLexiconEntry(s) != null) {
+                ++count_tokens;
+            }
+        }
+
+        sb.append(count_tokens);
+        for (String s : query_terms) {
+
             if (lex.getLexiconEntry(s) != null) {
                 sb.append(" ");
                 sb.append(lex.getLexiconEntry(s).getTermId());
@@ -90,9 +102,14 @@ public class MatchZooOutputFormat implements OutputFormat {
         bw.flush();
         final int[] docids = set.getDocids();
 
-        //MatchZooDocumentRepresentor mzdr = new MatchZooDocumentRepresentor(index, bw, docids, new EnglishTokeniser(), path_to_results + "tmp_file.txt",true,50);
-       // mzdr.writeRepresentation();
-
+        MatchZooDocumentRepresentor mzdr = new MatchZooDocumentRepresentor(
+                index, 
+                bw,
+                docids,
+                new EnglishTokeniser(),
+                254,
+                iterated  );
+        mzdr.writeRepresentation();
         bw.close();
 
         final double[] scores = set.getScores();
