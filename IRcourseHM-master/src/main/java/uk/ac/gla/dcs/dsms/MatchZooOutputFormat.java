@@ -16,11 +16,8 @@ import org.slf4j.LoggerFactory;
 import org.terrier.indexing.tokenisation.EnglishTokeniser;
 import org.terrier.matching.ResultSet;
 import org.terrier.querying.SearchRequest;
-import org.terrier.structures.DocumentIndex;
 import org.terrier.structures.Index;
 import org.terrier.structures.Lexicon;
-import org.terrier.structures.Pointer;
-import org.terrier.structures.PostingIndex;
 import org.terrier.structures.outputformat.*;
 import org.terrier.utility.ApplicationSetup;
 
@@ -34,16 +31,47 @@ public class MatchZooOutputFormat implements OutputFormat {
      * The logger used
      */
     protected static final Logger logger = LoggerFactory.getLogger(TRECDocidOutputFormat.class);
-    final Index index;
-    boolean[] iterated;
-    QrelsToDocumentRepresentor qr ;
+    private boolean[] iterated;
+    private QrelsToDocumentRepresentor qr;
+    private String path;
+    private String path_to_results;
+    private boolean QTDORProcessed;
+    private FileWriter fw;
+    private BufferedWriter bw;
+    private Lexicon<String> lex;
+    private MatchZooDocumentRepresentor mzdr;
 
     /**
      * Creates a new TRECDocidOutputFormat. The index object is ignored
      */
-    public MatchZooOutputFormat(Index index) {
-        this.index = index;
+    public MatchZooOutputFormat(Index index) throws IOException {
+        lex = index.getLexicon();
+        QTDORProcessed = false;
         iterated = new boolean[index.getDocumentIndex().getNumberOfDocuments()];
+        path = new File("").getAbsolutePath();
+        String bin = "";
+
+        StringTokenizer st = new StringTokenizer(path, "" + File.separatorChar);
+        while (st.hasMoreTokens()) {
+            bin = st.nextToken();
+        }
+
+        if (bin.equals("bin")) {
+            path_to_results = path + File.separatorChar + ".." + File.separatorChar + "var" + File.separatorChar + "results" + File.separatorChar;
+        } else {
+            path_to_results = path + File.separatorChar + "var" + File.separatorChar + "results" + File.separatorChar;
+        }
+
+        qr = new QrelsToDocumentRepresentor(path_to_results + "relation.txt", index.getDocumentIndex().getNumberOfDocuments());
+        fw = new FileWriter(path_to_results + "corpus_preprocessed.txt", true);
+        bw = new BufferedWriter(fw);
+        mzdr = new MatchZooDocumentRepresentor(
+                index,
+                bw,
+                new EnglishTokeniser(),
+                254,
+                iterated);
+
     }
 
     /**
@@ -56,32 +84,24 @@ public class MatchZooOutputFormat implements OutputFormat {
      */
     public void printResults(final PrintWriter pw, final SearchRequest q,
             String method, String iteration, int _RESULTS_LENGTH) throws IOException {
-        final ResultSet set = q.getResultSet();
-        PostingIndex<Pointer> dir = (PostingIndex<Pointer>) index.getDirectIndex();
-        String path = new File("").getAbsolutePath();
-        String bin = "";
-        DocumentIndex doi = index.getDocumentIndex();
-        StringTokenizer st = new StringTokenizer(path, "" + File.separatorChar);
-        while (st.hasMoreTokens()) {
-            bin = st.nextToken();
-        }
-        String path_to_results;
-        if (bin.equals("bin")) {
-            path_to_results = path + File.separatorChar + ".." + File.separatorChar + "var" + File.separatorChar + "results" + File.separatorChar;
-        } else {
-            path_to_results = path + File.separatorChar + "var" + File.separatorChar + "results" + File.separatorChar;
+
+        if (!QTDORProcessed) {
+            System.out.println("Started  getQrelsDocs ");
+            mzdr.writeRepresentation(qr.getQrelsDocs());
+            System.out.println("Finished  getQrelsDocs ");
+            QTDORProcessed = true;
+
         }
 
+        final ResultSet set = q.getResultSet();
         int count_tokens = 0;
-        FileWriter fw = new FileWriter(path_to_results + "corpus_preprocessed.txt", true);
-        BufferedWriter bw = new BufferedWriter(fw);
-        Lexicon<String> lex = index.getLexicon();
         String[] query_terms = q.getQuery().toString().split(" ");
         StringBuilder sb = new StringBuilder();
         sb.append("Q");
         sb.append(q.getQueryID());
         sb.append(" ");
-
+        fw = new FileWriter(path_to_results + "corpus_preprocessed.txt", true);
+        bw = new BufferedWriter(fw);
         for (String s : query_terms) {
 
             if (lex.getLexiconEntry(s) != null) {
@@ -102,15 +122,7 @@ public class MatchZooOutputFormat implements OutputFormat {
         bw.flush();
         final int[] docids = set.getDocids();
 
-        MatchZooDocumentRepresentor mzdr = new MatchZooDocumentRepresentor(
-                index, 
-                bw,
-                docids,
-                new EnglishTokeniser(),
-                254,
-                iterated  );
-        mzdr.writeRepresentation();
-        bw.close();
+       // mzdr.writeRepresentation(docids);
 
         final double[] scores = set.getScores();
         if (set.getResultSize() == 0) {
