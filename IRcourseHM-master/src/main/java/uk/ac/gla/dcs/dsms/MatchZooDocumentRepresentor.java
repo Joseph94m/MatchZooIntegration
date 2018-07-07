@@ -44,7 +44,6 @@ public class MatchZooDocumentRepresentor {
     }
 
     private void represent(int[] docids) throws IOException {
-        MetaIndex mi = index.getMetaIndex();
         StringBuilder sb;
         IterablePosting postings;
         int[] text;
@@ -91,30 +90,6 @@ public class MatchZooDocumentRepresentor {
             sb.append('\n');
             bw.write(sb.toString());
             bw.flush();
-
-//            String body = mi.getItem("body", docids[i]);
-//            String[] tokenized_body = tk.getTokens(body);
-//            sb.append("D");
-//            sb.append(docids[i]);
-//            sb.append(" ");
-//            for (String t : tokenized_body) {
-//                if (token_count == docSize) {
-//                    break;
-//                }
-//                LexiconEntry le = lex.getLexiconEntry(t);
-//                if (le == null) {
-//                } else {
-//                    ++token_count;
-//                    tmp_body.append(" ");
-//                    tmp_body.append(le.getTermId());
-//                }
-//            }
-//
-//            sb.append(token_count);
-//            sb.append(tmp_body.toString());
-//            sb.append('\n');
-//            bw.write(sb.toString());
-//            bw.flush();
         }
     }
 
