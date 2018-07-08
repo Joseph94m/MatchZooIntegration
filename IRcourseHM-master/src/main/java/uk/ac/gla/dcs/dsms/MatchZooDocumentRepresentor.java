@@ -5,19 +5,11 @@
  */
 package uk.ac.gla.dcs.dsms;
 
-import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.Arrays;
-import java.util.Map;
-import org.terrier.indexing.tokenisation.Tokeniser;
-import org.terrier.structures.BitIndexPointer;
 import org.terrier.structures.DocumentIndex;
 import org.terrier.structures.Index;
-import org.terrier.structures.Lexicon;
-import org.terrier.structures.LexiconEntry;
-import org.terrier.structures.MetaIndex;
 import org.terrier.structures.PostingIndex;
 import org.terrier.structures.postings.BlockPosting;
 import org.terrier.structures.postings.IterablePosting;
@@ -30,15 +22,12 @@ public class MatchZooDocumentRepresentor {
 
     final private Index index;
     final private Writer bw;
-    final private Tokeniser tk;
-    private BufferedReader r;
     final int docSize;
     boolean[] iterated;
 
-    public MatchZooDocumentRepresentor(Index index, Writer bw, Tokeniser tk, int docSize, boolean[] iterated) throws FileNotFoundException, IOException {
+    public MatchZooDocumentRepresentor(Index index, Writer bw, int docSize, boolean[] iterated) throws FileNotFoundException, IOException {
         this.index = index;
         this.bw = bw;
-        this.tk = tk;
         this.docSize = docSize;
         this.iterated = iterated;
     }
@@ -60,9 +49,9 @@ public class MatchZooDocumentRepresentor {
             DocumentIndex doi = index.getDocumentIndex();
             doc_length = doi.getDocumentLength(docids[i]);
 
-            if (doc_length > 200) {
-                text = new int[200];
-                doc_length = 200;
+            if (doc_length > docSize) {
+                text = new int[docSize];
+                doc_length = docSize;
             } else {
                 text = new int[doc_length];
             }
@@ -71,9 +60,8 @@ public class MatchZooDocumentRepresentor {
             while (postings.next() != IterablePosting.EOL) {
                 term_id = postings.getId();
                 int[] pos = ((BlockPosting) postings).getPositions();
-
                 for (int position : pos) {
-                    if (position < 200) {
+                    if (position < docSize) {
                         text[position] = term_id;
                     }
                 }

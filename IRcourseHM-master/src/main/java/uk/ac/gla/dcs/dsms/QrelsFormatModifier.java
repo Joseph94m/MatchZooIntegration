@@ -6,11 +6,9 @@
 package uk.ac.gla.dcs.dsms;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
@@ -20,15 +18,9 @@ import java.util.Map;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
-import org.terrier.indexing.tokenisation.EnglishTokeniser;
 import org.terrier.structures.DocumentIndex;
 import org.terrier.structures.Index;
-import org.terrier.structures.Lexicon;
-import org.terrier.structures.LexiconEntry;
 import org.terrier.structures.MetaIndex;
-import org.terrier.structures.Pointer;
-import org.terrier.structures.PostingIndex;
-import org.terrier.structures.postings.IterablePosting;
 
 /**
  *
@@ -40,6 +32,10 @@ public class QrelsFormatModifier {
     private String outputRelation;
     private Index index;
 
+    
+    /*
+    outputRelation should be in var\results\relation.txt
+    */
     public QrelsFormatModifier(String pathToIndex, String pathToQrels, String outputRelation) {
         this.pahToQrels = pathToQrels;
         this.outputRelation = outputRelation;
@@ -87,7 +83,6 @@ public class QrelsFormatModifier {
         PrintWriter pw = new PrintWriter(new File(outputRelation));
         List<CSVRecord> records = parser.getRecords();
         Map<String, Integer> docnos = new HashMap<>();
-        PostingIndex<Pointer> dir = (PostingIndex<Pointer>) index.getDirectIndex();
         for (int i = 0; i < di.getNumberOfDocuments(); ++i) {
             docnos.put(mi.getItem("docno", i), i);
         }
@@ -105,17 +100,6 @@ public class QrelsFormatModifier {
         pw.write(sb.toString());
         pw.flush();
         pw.close();
-
-//        int[] docids = new int[di.getNumberOfDocuments()];
-//        for (int i = 0; i < docids.length; ++i) {
-//            docids[i] = i;
-//        }
-//
-//        FileWriter fw = new FileWriter(new File("C:\\Users\\Joseph\\Desktop\\Studies\\Semester2\\IR\\qrels\\documents_preprocessed.txt"), true);
-//        BufferedWriter pw2 = new BufferedWriter(fw);
-//        MatchZooDocumentRepresentor mzdr = new MatchZooDocumentRepresentor(index, pw2, docids, new EnglishTokeniser(),
-//                "C:\\Users\\Joseph\\Desktop\\Studies\\Semester2\\IR\\qrels\\tmp_file.txt", false, 50);
-//        mzdr.writeRepresentation();
 
     }
 

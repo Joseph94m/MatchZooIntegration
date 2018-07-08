@@ -16,6 +16,7 @@ import java.util.List;
 import org.apache.commons.csv.*;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+
 /**
  *
  * @author Joseph
@@ -53,7 +54,7 @@ public class QrelsToDocumentRepresentor {
     }
 
     public static void main(String[] args) throws IOException {
-QrelsToDocumentRepresentor qr = new QrelsToDocumentRepresentor("C:\\Users\\Joseph\\Desktop\\Studies\\Semester2\\IR\\terrier-core-4.2\\var\\results\\relation.txt",1);
+        QrelsToDocumentRepresentor qr = new QrelsToDocumentRepresentor("C:\\Users\\Joseph\\Desktop\\Studies\\Semester2\\IR\\terrier-core-4.2\\var\\results\\relation.txt", 1);
         System.out.println("Did it");
     }
 

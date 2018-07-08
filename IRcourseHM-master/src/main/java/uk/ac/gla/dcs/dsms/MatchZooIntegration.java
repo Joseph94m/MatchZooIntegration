@@ -6,7 +6,6 @@
 package uk.ac.gla.dcs.dsms;
 
 import java.io.IOException;
-import org.terrier.structures.*;
 
 /**
  *

@@ -13,7 +13,6 @@ import java.io.PrintWriter;
 import java.util.StringTokenizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.terrier.indexing.tokenisation.EnglishTokeniser;
 import org.terrier.matching.ResultSet;
 import org.terrier.querying.SearchRequest;
 import org.terrier.structures.Index;
@@ -61,17 +60,18 @@ public class MatchZooOutputFormat implements OutputFormat {
         } else {
             path_to_results = path + File.separatorChar + "var" + File.separatorChar + "results" + File.separatorChar;
         }
-
+        
+        PrintWriter writer = new PrintWriter(path_to_results+ "corpus_preprocessed.txt");
+        writer.print("");
+        writer.close();
         qr = new QrelsToDocumentRepresentor(path_to_results + "relation.txt", index.getDocumentIndex().getNumberOfDocuments());
         fw = new FileWriter(path_to_results + "corpus_preprocessed.txt", true);
         bw = new BufferedWriter(fw);
         mzdr = new MatchZooDocumentRepresentor(
                 index,
                 bw,
-                new EnglishTokeniser(),
                 254,
                 iterated);
-
     }
 
     /**
@@ -86,11 +86,8 @@ public class MatchZooOutputFormat implements OutputFormat {
             String method, String iteration, int _RESULTS_LENGTH) throws IOException {
 
         if (!QTDORProcessed) {
-            System.out.println("Started  getQrelsDocs ");
             mzdr.writeRepresentation(qr.getQrelsDocs());
-            System.out.println("Finished  getQrelsDocs ");
             QTDORProcessed = true;
-
         }
 
         final ResultSet set = q.getResultSet();
@@ -122,8 +119,7 @@ public class MatchZooOutputFormat implements OutputFormat {
         bw.flush();
         final int[] docids = set.getDocids();
 
-       // mzdr.writeRepresentation(docids);
-
+        // mzdr.writeRepresentation(docids);
         final double[] scores = set.getScores();
         if (set.getResultSize() == 0) {
             logger.warn("No results retrieved for query " + q.getQueryID());
