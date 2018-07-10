@@ -119,7 +119,7 @@ public class MatchZooOutputFormat implements OutputFormat {
         bw.flush();
         final int[] docids = set.getDocids();
 
-        // mzdr.writeRepresentation(docids);
+        mzdr.writeRepresentation(docids);
         final double[] scores = set.getScores();
         if (set.getResultSize() == 0) {
             logger.warn("No results retrieved for query " + q.getQueryID());
