@@ -49,7 +49,7 @@ public class QrelsFormatModifierTester extends ApplicationSetupBasedTest {
         qm = new QrelsFormatModifier(index,
                 "src\\test\\java\\testResources\\test1_qrels_format_modifier.txt",
                 "src\\test\\java\\testResources\\test1_qrels_format_modifier_output.txt");
-        qm.writeQrels();
+        qm.wroteToMZFormat();
         csvData = new BufferedReader(new FileReader("src\\test\\java\\testResources\\test1_qrels_format_modifier_output.txt"));
         parser = new CSVParser(csvData, CSVFormat.newFormat(' '));
         records = parser.getRecords();
@@ -72,7 +72,7 @@ public class QrelsFormatModifierTester extends ApplicationSetupBasedTest {
         qm = new QrelsFormatModifier(index,
                 "src\\test\\java\\testResources\\test2_qrels_format_modifier.txt",
                 "src\\test\\java\\testResources\\test2_qrels_format_modifier_output.txt");
-        qm.writeQrels();
+        qm.wroteToMZFormat();
         csvData = new BufferedReader(new FileReader("src\\test\\java\\testResources\\test2_qrels_format_modifier_output.txt"));
         parser = new CSVParser(csvData, CSVFormat.newFormat(' '));
         records = parser.getRecords();

@@ -32,10 +32,9 @@ public class QrelsFormatModifier {
     private String outputRelation;
     private Index index;
 
-    
     /*
     outputRelation should be in var\results\relation.txt
-    */
+     */
     public QrelsFormatModifier(String pathToIndex, String pathToQrels, String outputRelation) {
         this.pahToQrels = pathToQrels;
         this.outputRelation = outputRelation;
@@ -73,7 +72,7 @@ public class QrelsFormatModifier {
         this.index = index;
     }
 
-    public void writeQrels() throws FileNotFoundException, IOException {
+    public void wroteToMZFormat() throws FileNotFoundException, IOException {
         MetaIndex mi = index.getMetaIndex();
         File file = new File(pahToQrels);
         Reader csvData = new BufferedReader(new FileReader(file));
@@ -101,6 +100,37 @@ public class QrelsFormatModifier {
         pw.flush();
         pw.close();
 
+    }
+
+    public void writeToTerrierAndMZFormat() throws IOException {
+        MetaIndex mi = index.getMetaIndex();
+        File file = new File(pahToQrels);
+        Reader csvData = new BufferedReader(new FileReader(file));
+        CSVParser parser = new CSVParser(csvData, CSVFormat.newFormat(' '));
+        StringBuilder sb = new StringBuilder();
+        DocumentIndex di = index.getDocumentIndex();
+        PrintWriter pw = new PrintWriter(new File(outputRelation));
+        List<CSVRecord> records = parser.getRecords();
+        Map<String, Integer> docnos = new HashMap<>();
+        for (int i = 0; i < di.getNumberOfDocuments(); ++i) {
+            docnos.put(mi.getItem("docno", i), i);
+        }
+        for (int j = 0; j < records.size(); ++j) {
+            int doc = docnos.get(records.get(j).get(2));
+            sb.append('Q');
+            sb.append(records.get(j).get(0));
+            sb.append(' ');
+            sb.append("0");
+            sb.append(' ');
+            sb.append("D");
+            sb.append(doc);
+            sb.append(' ');
+            sb.append(records.get(j).get(3));
+            sb.append('\n');
+        }
+        pw.write(sb.toString());
+        pw.flush();
+        pw.close();
     }
 
 }
