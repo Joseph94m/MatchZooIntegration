@@ -6,9 +6,11 @@
 package uk.ac.gla.dcs.dsms;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
@@ -23,27 +25,56 @@ import org.apache.commons.csv.CSVRecord;
  */
 public class AOLToTopics {
 
-    private final String pathToAOLS;
-    private final String pathToTopics;
+    private String pathToAOLS;
+    private String pathToTopics;
+    private FileWriter fw;
+    private BufferedWriter bw;
+    private File file;
+    private int q = 1;
 
-    public AOLToTopics(String pathToAOLS, String pathToTopics) {
-        this.pathToAOLS = pathToAOLS;
-        this.pathToTopics = pathToTopics;
+    public String getPathToAOLS() {
+        return pathToAOLS;
     }
 
-    public String transform() throws FileNotFoundException, IOException {
-        File file = new File(pathToAOLS);
+    public void setPathToAOLS(String pathToAOLS) {
+        this.pathToAOLS = pathToAOLS;
+        file = new File(pathToAOLS);
+    }
+
+    public String getPathToTopics() {
+        return pathToTopics;
+    }
+
+    public void setPathToTopics(String pathToTopics) throws IOException {
+        this.pathToTopics = pathToTopics;
+        fw = new FileWriter(pathToTopics, true);
+        bw = new BufferedWriter(fw);
+    }
+
+    public AOLToTopics(String pathToAOLS, String pathToTopics) throws IOException {
+        this.pathToAOLS = pathToAOLS;
+        this.pathToTopics = pathToTopics;
+        PrintWriter writer = new PrintWriter(pathToTopics);
+        writer.print("");
+        writer.close();
+        fw = new FileWriter(pathToTopics, true);
+        bw = new BufferedWriter(fw);
+        file = new File(pathToAOLS);
+    }
+
+    public void writeTransform() throws FileNotFoundException, IOException {
         Reader csvData = new BufferedReader(new FileReader(file));
         CSVParser parser = new CSVParser(csvData, CSVFormat.newFormat('\t'));
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb;
         List<CSVRecord> records = parser.getRecords();
+
         for (int j = 1; j < records.size(); ++j) {
+            sb = new StringBuilder();
             sb.append("<top>");
             sb.append('\n');
             sb.append('\n');
             sb.append("<num> Number: ");
-            sb.append(j);
-          //  sb.append("000");
+            sb.append(q);
             sb.append('\n');
             sb.append("<title> ");
             sb.append(records.get(j).get(1));
@@ -66,20 +97,24 @@ public class AOLToTopics {
             sb.append('\n');
             sb.append('\n');
             sb.append('\n');
-
+            ++q;
+            bw.write(sb.toString());
+            bw.flush();
         }
-        return sb.toString();
-    }
-
-    public void writeTransform() throws FileNotFoundException, IOException {
-        PrintWriter pw = new PrintWriter(new File(pathToTopics));
-        pw.write(transform());
 
     }
 
     public static void main(String[] args) throws IOException {
-        AOLToTopics aol = new AOLToTopics("C:\\Users\\Joseph\\Desktop\\Studies\\Semester2\\IR\\queries\\2000-aol.txt", "C:\\Users\\Joseph\\Desktop\\Studies\\Semester2\\IR\\queries\\aol-qrels.txt");
+        AOLToTopics aol = new AOLToTopics("C:\\Users\\Joseph\\Desktop\\Studies\\Semester2\\IR\\queries\\user-ct-test-collection-01.txt", "C:\\Users\\Joseph\\Desktop\\Studies\\Semester2\\IR\\queries\\aol-qrels.txt");
+       // aol.writeTransform();
+        for (int i = 2; i < 10; ++i) {
+            System.out.println(i);
+            //   aol.setPathToAOLS("C:\\Users\\Joseph\\Desktop\\Studies\\Semester2\\IR\\queries\\user-ct-test-collection-0" + i + ".txt");
+            // aol.writeTransform();
+        }
+        aol.setPathToAOLS("C:\\Users\\Joseph\\Desktop\\Studies\\Semester2\\IR\\queries\\user-ct-test-collection-01.txt");
         aol.writeTransform();
+
     }
 
 }

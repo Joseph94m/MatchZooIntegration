@@ -10,7 +10,7 @@
                 <goal>org.codehaus.mojo:exec-maven-plugin:1.2.1:exec</goal>
             </goals>
             <properties>
-                <exec.args>-classpath %classpath uk.ac.gla.dcs.dsms.MatchZooIntegration C:\Users\Joseph\Desktop\Studies\Semester2\IR\terrier-core-4.2\var\index C:\Users\Joseph\Desktop\Studies\Semester2\IR\qrels\qrels.robust2004.txt</exec.args>
+                <exec.args>-Xmx10000m -classpath %classpath uk.ac.gla.dcs.dsms.MatchZooIntegration C:\Users\Joseph\Desktop\Studies\Semester2\IR\terrier-core-4.2\var\index C:\Users\Joseph\Desktop\Studies\Semester2\IR\qrels\qrels.robust2004.txt</exec.args>
                 <exec.executable>java</exec.executable>
             </properties>
         </action>
@@ -24,7 +24,7 @@
                 <goal>org.codehaus.mojo:exec-maven-plugin:1.2.1:exec</goal>
             </goals>
             <properties>
-                <exec.args>-Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address} -classpath %classpath uk.ac.gla.dcs.dsms.MatchZooIntegration C:\Users\Joseph\Desktop\Studies\Semester2\IR\terrier-core-4.2\var\index C:\Users\Joseph\Desktop\Studies\Semester2\IR\qrels\qrels.robust2004.txt</exec.args>
+                <exec.args>-Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address} -Xmx10000m -classpath %classpath uk.ac.gla.dcs.dsms.MatchZooIntegration C:\Users\Joseph\Desktop\Studies\Semester2\IR\terrier-core-4.2\var\index C:\Users\Joseph\Desktop\Studies\Semester2\IR\qrels\qrels.robust2004.txt</exec.args>
                 <exec.executable>java</exec.executable>
                 <jpda.listen>true</jpda.listen>
             </properties>
@@ -39,7 +39,7 @@
                 <goal>org.codehaus.mojo:exec-maven-plugin:1.2.1:exec</goal>
             </goals>
             <properties>
-                <exec.args>-classpath %classpath uk.ac.gla.dcs.dsms.MatchZooIntegration C:\Users\Joseph\Desktop\Studies\Semester2\IR\terrier-core-4.2\var\index C:\Users\Joseph\Desktop\Studies\Semester2\IR\qrels\qrels.robust2004.txt</exec.args>
+                <exec.args>-Xmx10000m -classpath %classpath uk.ac.gla.dcs.dsms.MatchZooIntegration C:\Users\Joseph\Desktop\Studies\Semester2\IR\terrier-core-4.2\var\index C:\Users\Joseph\Desktop\Studies\Semester2\IR\qrels\qrels.robust2004.txt</exec.args>
                 <exec.executable>java</exec.executable>
             </properties>
         </action>

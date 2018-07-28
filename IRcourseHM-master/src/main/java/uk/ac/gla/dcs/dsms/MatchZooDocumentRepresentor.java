@@ -18,6 +18,11 @@ import org.terrier.structures.postings.IterablePosting;
  *
  * @author Joseph
  */
+
+/*
+*This class appens to a file specified by @param bw, the following line: D+Docid #of_words list_of_word_ids
+*This is used to create the corpus_preprocessed file
+*/
 public class MatchZooDocumentRepresentor {
 
     final private Index index;
@@ -32,16 +37,19 @@ public class MatchZooDocumentRepresentor {
         this.iterated = iterated;
     }
 
+
     private void represent(int[] docids) throws IOException {
         StringBuilder sb;
         IterablePosting postings;
         int[] text;
         int doc_length;
         int term_id;
+        //Check if document is already present in the file. If yes, then skip doc.
         for (int i = 0; i < docids.length; ++i) {
             if (iterated[docids[i]] == true) {
                 continue;
             }
+            //If document is not  in file, get the first @docSize tokens/words and append them to a string builder
             iterated[docids[i]] = true;
             sb = new StringBuilder();
 
@@ -76,6 +84,7 @@ public class MatchZooDocumentRepresentor {
                 sb.append(t);
             }
             sb.append('\n');
+            //Append to file
             bw.write(sb.toString());
             bw.flush();
         }

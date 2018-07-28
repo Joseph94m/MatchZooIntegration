@@ -72,7 +72,7 @@ public class QrelsFormatModifier {
         this.index = index;
     }
 
-    public void wroteToMZFormat() throws FileNotFoundException, IOException {
+    public void writeToMZFormat() throws FileNotFoundException, IOException {
         MetaIndex mi = index.getMetaIndex();
         File file = new File(pahToQrels);
         Reader csvData = new BufferedReader(new FileReader(file));

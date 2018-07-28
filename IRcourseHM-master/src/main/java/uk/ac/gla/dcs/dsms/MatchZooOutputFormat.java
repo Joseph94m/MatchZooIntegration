@@ -31,10 +31,8 @@ public class MatchZooOutputFormat implements OutputFormat {
      */
     protected static final Logger logger = LoggerFactory.getLogger(TRECDocidOutputFormat.class);
     private boolean[] iterated;
-    private QrelsToDocumentRepresentor qr;
     private String path;
     private String path_to_results;
-    private boolean QTDORProcessed;
     private FileWriter fw;
     private BufferedWriter bw;
     private Lexicon<String> lex;
@@ -45,7 +43,6 @@ public class MatchZooOutputFormat implements OutputFormat {
      */
     public MatchZooOutputFormat(Index index) throws IOException {
         lex = index.getLexicon();
-        QTDORProcessed = false;
         iterated = new boolean[index.getDocumentIndex().getNumberOfDocuments()];
         path = new File("").getAbsolutePath();
         String bin = "";
@@ -64,7 +61,6 @@ public class MatchZooOutputFormat implements OutputFormat {
         PrintWriter writer = new PrintWriter(path_to_results+ "corpus_preprocessed.txt");
         writer.print("");
         writer.close();
-        qr = new QrelsToDocumentRepresentor(path_to_results + "relation.txt", index.getDocumentIndex().getNumberOfDocuments());
         fw = new FileWriter(path_to_results + "corpus_preprocessed.txt", true);
         bw = new BufferedWriter(fw);
         mzdr = new MatchZooDocumentRepresentor(
@@ -85,10 +81,6 @@ public class MatchZooOutputFormat implements OutputFormat {
     public void printResults(final PrintWriter pw, final SearchRequest q,
             String method, String iteration, int _RESULTS_LENGTH) throws IOException {
 
-        if (!QTDORProcessed) {
-            mzdr.writeRepresentation(qr.getQrelsDocs());
-            QTDORProcessed = true;
-        }
 
         final ResultSet set = q.getResultSet();
         int count_tokens = 0;
