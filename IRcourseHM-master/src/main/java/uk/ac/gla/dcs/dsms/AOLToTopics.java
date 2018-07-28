@@ -104,17 +104,5 @@ public class AOLToTopics {
 
     }
 
-    public static void main(String[] args) throws IOException {
-        AOLToTopics aol = new AOLToTopics("C:\\Users\\Joseph\\Desktop\\Studies\\Semester2\\IR\\queries\\user-ct-test-collection-01.txt", "C:\\Users\\Joseph\\Desktop\\Studies\\Semester2\\IR\\queries\\aol-qrels.txt");
-       // aol.writeTransform();
-        for (int i = 2; i < 10; ++i) {
-            System.out.println(i);
-            //   aol.setPathToAOLS("C:\\Users\\Joseph\\Desktop\\Studies\\Semester2\\IR\\queries\\user-ct-test-collection-0" + i + ".txt");
-            // aol.writeTransform();
-        }
-        aol.setPathToAOLS("C:\\Users\\Joseph\\Desktop\\Studies\\Semester2\\IR\\queries\\user-ct-test-collection-01.txt");
-        aol.writeTransform();
-
-    }
 
 }
