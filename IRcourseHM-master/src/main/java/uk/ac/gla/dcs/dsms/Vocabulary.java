@@ -6,6 +6,7 @@
 package uk.ac.gla.dcs.dsms;
 
 import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -23,24 +24,29 @@ import org.terrier.structures.PostingIndex;
 /*
 This class generates word_stats.txt and word_dict.txt
  */
-public class WordGen {
+public class Vocabulary {
 
     private final Index index;
 
-    public WordGen(String index) {
+    public Vocabulary(String index) {
         this.index = Index.createIndex(index, "data");;
     }
 
-    public WordGen(Index index) {
+    public Vocabulary(Index index) {
         this.index = index;
     }
 
-    public void wordDict(String output) throws IOException {
-        PrintWriter writer = new PrintWriter(output);
+    private void emptyFile(String outputFile) throws FileNotFoundException {
+        PrintWriter writer = new PrintWriter(outputFile);
         writer.print("");
         writer.close();
-        FileWriter fw = new FileWriter(output, true);
-        BufferedWriter bw = new BufferedWriter(fw);
+    }
+
+    public void getWordDict(String outputFile, boolean append) throws IOException {
+        if (!append) {
+            emptyFile(outputFile);
+        }
+        BufferedWriter bw = new BufferedWriter(new FileWriter(outputFile, true));
         Lexicon<String> lex = index.getLexicon();
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < lex.numberOfEntries(); ++i) {
@@ -49,7 +55,7 @@ public class WordGen {
             sb.append(" ");
             sb.append(i);
             sb.append('\n');
-            if (i % 5000 == 0) {
+            if (i % 10000 == 0) {
                 bw.append(sb.toString());
                 bw.flush();
                 sb = new StringBuilder();
@@ -60,19 +66,15 @@ public class WordGen {
         bw.close();
     }
 
-    public void wordStats(String output) throws IOException {
-        PrintWriter writer = new PrintWriter(output);
-        writer.print("");
-        writer.close();
-        FileWriter fw = new FileWriter(output, true);
-        BufferedWriter bw = new BufferedWriter(fw);
+    public void getWordStats(String outputFile, boolean append) throws IOException {
+        if (!append) {
+            emptyFile(outputFile);
+        }
+        BufferedWriter bw = new BufferedWriter(new FileWriter(outputFile, true));
         Lexicon<String> lex = index.getLexicon();
         StringBuilder sb = new StringBuilder();
-        PostingIndex<?> inv = index.getInvertedIndex();
-
         for (int i = 0; i < lex.numberOfEntries(); ++i) {
             Entry<String, LexiconEntry> entry = lex.getLexiconEntry(i);
-
             sb.append(i);
             sb.append(" ");
             sb.append(entry.getValue().getNumberOfEntries());
@@ -81,7 +83,7 @@ public class WordGen {
             sb.append(" ");
             sb.append(WeightingModelLibrary.log(index.getDocumentIndex().getNumberOfDocuments() / (entry.getValue().getNumberOfEntries() + 0.0)));
             sb.append('\n');
-            if (i % 5000 == 0) {
+            if (i % 10000 == 0) {
                 bw.append(sb.toString());
                 bw.flush();
                 sb = new StringBuilder();
@@ -91,7 +93,5 @@ public class WordGen {
         bw.flush();
         bw.close();
     }
-
-
 
 }

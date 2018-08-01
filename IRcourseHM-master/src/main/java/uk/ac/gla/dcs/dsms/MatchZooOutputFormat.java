@@ -57,8 +57,8 @@ public class MatchZooOutputFormat implements OutputFormat {
         } else {
             path_to_results = path + File.separatorChar + "var" + File.separatorChar + "results" + File.separatorChar;
         }
-        
-        PrintWriter writer = new PrintWriter(path_to_results+ "corpus_preprocessed.txt");
+
+        PrintWriter writer = new PrintWriter(path_to_results + "corpus_preprocessed.txt");
         writer.print("");
         writer.close();
         fw = new FileWriter(path_to_results + "corpus_preprocessed.txt", true);
@@ -80,7 +80,6 @@ public class MatchZooOutputFormat implements OutputFormat {
      */
     public void printResults(final PrintWriter pw, final SearchRequest q,
             String method, String iteration, int _RESULTS_LENGTH) throws IOException {
-
 
         final ResultSet set = q.getResultSet();
         int count_tokens = 0;

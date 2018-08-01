@@ -22,7 +22,7 @@ import org.terrier.structures.postings.IterablePosting;
 /*
 *This class appens to a file specified by @param bw, the following line: D+Docid #of_words list_of_word_ids
 *This is used to create the corpus_preprocessed file
-*/
+ */
 public class MatchZooDocumentRepresentor {
 
     final private Index index;
@@ -37,8 +37,7 @@ public class MatchZooDocumentRepresentor {
         this.iterated = iterated;
     }
 
-
-    private void represent(int[] docids) throws IOException {
+    public void writeRepresentation(int[] docids) throws IOException {
         StringBuilder sb;
         IterablePosting postings;
         int[] text;
@@ -88,10 +87,6 @@ public class MatchZooDocumentRepresentor {
             bw.write(sb.toString());
             bw.flush();
         }
-    }
-
-    public void writeRepresentation(int[] docids) throws IOException {
-        represent(docids);
     }
 
 }

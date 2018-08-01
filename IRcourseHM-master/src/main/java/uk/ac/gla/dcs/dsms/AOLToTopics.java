@@ -65,11 +65,9 @@ public class AOLToTopics {
     public void writeTransform() throws FileNotFoundException, IOException {
         Reader csvData = new BufferedReader(new FileReader(file));
         CSVParser parser = new CSVParser(csvData, CSVFormat.newFormat('\t'));
-        StringBuilder sb;
+        StringBuilder sb = new StringBuilder();
         List<CSVRecord> records = parser.getRecords();
-
         for (int j = 1; j < records.size(); ++j) {
-            sb = new StringBuilder();
             sb.append("<top>");
             sb.append('\n');
             sb.append('\n');
@@ -98,11 +96,14 @@ public class AOLToTopics {
             sb.append('\n');
             sb.append('\n');
             ++q;
-            bw.write(sb.toString());
-            bw.flush();
+            if (j % 10000 == 0) {
+                bw.write(sb.toString());
+                bw.flush();
+                sb = new StringBuilder();
+            }
         }
-
+        bw.write(sb.toString());
+        bw.flush();
+        bw.close();
     }
-
-
 }

@@ -6,24 +6,16 @@
 package uk.ac.gla.dcs.dsms;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
-import java.io.PrintWriter;
 import java.io.Reader;
 import java.util.List;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
-import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.terrier.indexing.IndexTestUtils;
-import org.terrier.structures.DocumentIndex;
 import org.terrier.structures.Index;
-import org.terrier.structures.postings.BlockPosting;
-import org.terrier.structures.postings.IterablePosting;
 import org.terrier.tests.ApplicationSetupBasedTest;
 import org.terrier.utility.ApplicationSetup;
 
@@ -46,10 +38,10 @@ public class QrelsFormatModifierTester extends ApplicationSetupBasedTest {
                 new String[]{"doc1"},
                 new String[]{"The quick brown fox jumps over the lazy dog"});
 
-        qm = new QrelsFormatModifier(index,
-                "src\\test\\java\\testResources\\test1_qrels_format_modifier.txt",
-                "src\\test\\java\\testResources\\test1_qrels_format_modifier_output.txt");
-        qm.writeToMZFormat();
+        qm = new QrelsFormatModifier(index);
+        qm.writeToTerrierAndMZFormat("src\\test\\java\\testResources\\test2_qrels_format_modifier.txt",
+                "src\\test\\java\\testResources\\test2_qrels_format_modifier_output.txt",
+                false);
         csvData = new BufferedReader(new FileReader("src\\test\\java\\testResources\\test1_qrels_format_modifier_output.txt"));
         parser = new CSVParser(csvData, CSVFormat.newFormat(' '));
         records = parser.getRecords();
@@ -69,10 +61,10 @@ public class QrelsFormatModifierTester extends ApplicationSetupBasedTest {
                 new String[]{"The quick brown fox jumps over the lazy dog", "ad vitam aeternam"}
         );
 
-        qm = new QrelsFormatModifier(index,
-                "src\\test\\java\\testResources\\test2_qrels_format_modifier.txt",
-                "src\\test\\java\\testResources\\test2_qrels_format_modifier_output.txt");
-        qm.writeToMZFormat();
+        qm = new QrelsFormatModifier(index);
+        qm.writeToTerrierAndMZFormat("src\\test\\java\\testResources\\test2_qrels_format_modifier.txt",
+                "src\\test\\java\\testResources\\test2_qrels_format_modifier_output.txt",
+                false);
         csvData = new BufferedReader(new FileReader("src\\test\\java\\testResources\\test2_qrels_format_modifier_output.txt"));
         parser = new CSVParser(csvData, CSVFormat.newFormat(' '));
         records = parser.getRecords();
