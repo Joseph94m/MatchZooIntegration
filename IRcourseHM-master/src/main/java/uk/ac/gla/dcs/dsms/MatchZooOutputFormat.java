@@ -44,20 +44,9 @@ public class MatchZooOutputFormat implements OutputFormat {
     public MatchZooOutputFormat(Index index) throws IOException {
         lex = index.getLexicon();
         iterated = new boolean[index.getDocumentIndex().getNumberOfDocuments()];
-        path = new File("").getAbsolutePath();
-        String bin = "";
 
-        StringTokenizer st = new StringTokenizer(path, "" + File.separatorChar);
-        while (st.hasMoreTokens()) {
-            bin = st.nextToken();
-        }
-
-        if (bin.equals("bin")) {
-            path_to_results = path + File.separatorChar + ".." + File.separatorChar + "var" + File.separatorChar + "results" + File.separatorChar;
-        } else {
-            path_to_results = path + File.separatorChar + "var" + File.separatorChar + "results" + File.separatorChar;
-        }
-
+        path_to_results = ApplicationSetup.TERRIER_HOME + ApplicationSetup.FILE_SEPARATOR + "var" + ApplicationSetup.FILE_SEPARATOR + "results" + ApplicationSetup.FILE_SEPARATOR;
+        System.out.println(path_to_results);
         PrintWriter writer = new PrintWriter(path_to_results + "corpus_preprocessed.txt");
         writer.print("");
         writer.close();
