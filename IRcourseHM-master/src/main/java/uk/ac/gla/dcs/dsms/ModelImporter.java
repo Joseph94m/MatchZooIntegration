@@ -3,13 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package learn.to.rank;
+package uk.ac.gla.dcs.dsms;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.deeplearning4j.nn.graph.ComputationGraph;
-import org.deeplearning4j.nn.modelimport.keras.InvalidKerasConfigurationException;
+import org.deeplearning4j.nn.modelimport.keras.exceptions.InvalidKerasConfigurationException;
 import org.deeplearning4j.nn.modelimport.keras.KerasModelImport;
-import org.deeplearning4j.nn.modelimport.keras.UnsupportedKerasConfigurationException;
+import org.deeplearning4j.nn.modelimport.keras.exceptions.UnsupportedKerasConfigurationException;
 
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -19,11 +21,35 @@ import org.nd4j.linalg.factory.Nd4j;
  *
  * @author Joseph
  */
-public class MZModel {
+public class ModelImporter {
 
-    public static void main(String[] args) throws IOException, UnsupportedKerasConfigurationException, InvalidKerasConfigurationException {
-        //  KerasModelImport.importKerasModelAndWeights("C:\\Users\\Joseph\\Desktop\\Studies\\Project\\MatchZoo\\examples\\Robust\\weights\\nmws.Robust.444.50.false.254.weights.1.model", "C:\\Users\\Joseph\\Desktop\\Studies\\Project\\MatchZoo\\examples\\Robust\\weights\\nmws.Robust.444.50.false.254.weights.1");
-        //KerasModelImport.importKerasModelAndWeights("C:\\Users\\Joseph\\Desktop\\Studies\\Project\\MatchZoo\\examples\\Robust\\weights\\nmws.Robust.444.50.false.254.weights.1.model");
-        KerasModelImport.importKerasModelAndWeights("C:\\Users\\Joseph\\Desktop\\Studies\\Project\\MatchZoo\\examples\\Robust\\weights\\knrm.Robust.444.50.false.50.weights.1.model", false);
+    public static ComputationGraph modelImport(String pathToModel, String pathToWeights) {
+        ComputationGraph cg = null;
+        try {
+
+            cg = KerasModelImport.importKerasModelAndWeights(pathToModel, pathToWeights);
+        } catch (IOException ex) {
+            Logger.getLogger(ModelImporter.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (UnsupportedKerasConfigurationException ex) {
+            Logger.getLogger(ModelImporter.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InvalidKerasConfigurationException ex) {
+            Logger.getLogger(ModelImporter.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return cg;
+    }
+
+    public static ComputationGraph modelImport(String pathToModel) {
+        ComputationGraph cg = null;
+        try {
+            cg = KerasModelImport.importKerasModelAndWeights(pathToModel, false);
+        } catch (IOException ex) {
+            Logger.getLogger(ModelImporter.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (UnsupportedKerasConfigurationException ex) {
+            Logger.getLogger(ModelImporter.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InvalidKerasConfigurationException ex) {
+            Logger.getLogger(ModelImporter.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return cg;
+
     }
 }
