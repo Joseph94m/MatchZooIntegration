@@ -89,9 +89,10 @@ public class MatchZooDocumentRepresentor {
         }
     }
 
-    public String getRepresentation(int[] docids) throws IOException {
-        StringBuilder sb = new StringBuilder();;
+    public String[] getRepresentation(int[] docids) throws IOException {
+        StringBuilder sb = null;
         IterablePosting postings;
+        String [] ret = new String[docids.length];
         int[] text;
         int doc_length;
         int term_id;
@@ -102,7 +103,7 @@ public class MatchZooDocumentRepresentor {
             }
             //If document is not  in file, get the first @docSize tokens/words and append them to a string builder
             iterated[docids[i]] = true;
-
+            sb= new StringBuilder();
             PostingIndex<?> di = index.getDirectIndex();
             DocumentIndex doi = index.getDocumentIndex();
             doc_length = doi.getDocumentLength(docids[i]);
@@ -133,11 +134,10 @@ public class MatchZooDocumentRepresentor {
                 sb.append(" ");
                 sb.append(t);
             }
-            sb.append('\n');
-            //Append to file
+            ret[i]=sb.toString();
 
         }
-        return sb.toString();
+        return ret;
     }
 
 }

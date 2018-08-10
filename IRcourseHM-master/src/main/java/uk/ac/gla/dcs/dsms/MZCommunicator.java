@@ -27,10 +27,9 @@ import org.terrier.structures.Lexicon;
  */
 public class MZCommunicator {
 
-    InetAddress server;
-    DatagramSocket ss = null;
-
-    String[] newScores;
+    private InetAddress server;
+    private DatagramSocket ss = null;
+    private static final int PORT_NUMBER = 6776;
 
     public MZCommunicator(InetAddress host) {
         server = host;
@@ -46,7 +45,6 @@ public class MZCommunicator {
         Lexicon<String> lex = index.getLexicon();
         int[] docids = resultSet.getDocids();
         double[] scores = resultSet.getScores();
-
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < docids.length; ++i) {
             sb.append(scores[i]);
@@ -64,7 +62,7 @@ public class MZCommunicator {
         byte[] message = new byte[longueur];
         message = ligne.getBytes();
 
-        DatagramPacket rel = new DatagramPacket(message, longueur, server, 6776);
+        DatagramPacket rel = new DatagramPacket(message, longueur, server, PORT_NUMBER);
         try {
             ss.send(rel);
         } catch (IOException ex) {
@@ -74,6 +72,7 @@ public class MZCommunicator {
         sb = new StringBuilder();
         sb.append("Q");
         sb.append(queryID);
+        sb.append(" ");
         int count_tokens = 0;
         String[] query_terms = query.toString().split(" ");
         for (String s : query_terms) {
@@ -96,10 +95,28 @@ public class MZCommunicator {
         longueur = ligne.length();
         message = new byte[longueur];
         message = ligne.getBytes();
-        DatagramPacket q = new DatagramPacket(message, longueur, server, 6776);
-        System.out.println(longueur);
+        DatagramPacket q = new DatagramPacket(message, longueur, server, PORT_NUMBER);
+
+        byte[] tmpMessage = new byte[5];
+        DatagramPacket tmpRecept = new DatagramPacket(tmpMessage, tmpMessage.length);
+        ss.receive(tmpRecept);
+
         try {
             ss.send(q);
+        } catch (IOException ex) {
+            Logger.getLogger(MZCommunicator.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        int setSize = docids.length;
+        ligne = "" + setSize;
+        longueur = ligne.length();
+        message = new byte[longueur];
+        message = ligne.getBytes();
+        DatagramPacket size = new DatagramPacket(message, longueur, server, PORT_NUMBER);
+        tmpRecept = new DatagramPacket(tmpMessage, tmpMessage.length);
+        ss.receive(tmpRecept);
+        try {
+            ss.send(size);
         } catch (IOException ex) {
             Logger.getLogger(MZCommunicator.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -109,50 +126,47 @@ public class MZCommunicator {
                 null,
                 254,
                 new boolean[index.getDocumentIndex().getNumberOfDocuments()]);
-    
-        ligne = mzdr.getRepresentation(docids);
-                longueur = ligne.length();
-        message = new byte[longueur];
-        message = ligne.getBytes();
-        DatagramPacket d = new DatagramPacket(message, longueur, server, 6776);
-        System.out.println(longueur);
+
+        String[] docs = mzdr.getRepresentation(docids);
+
+        for (int i = 0; i < docs.length; ++i) {
+            longueur = docs[i].length();
+            message = new byte[longueur];
+            message = docs[i].getBytes();
+            DatagramPacket d = new DatagramPacket(message, longueur, server, PORT_NUMBER);
+            tmpRecept = new DatagramPacket(tmpMessage, tmpMessage.length);
+            ss.receive(tmpRecept);
+            try {
+                ss.send(d);
+            } catch (IOException ex) {
+                Logger.getLogger(MZCommunicator.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+        byte[] receivedMessage = new byte[50000];
+        DatagramPacket recept = new DatagramPacket(receivedMessage, receivedMessage.length);
+
         try {
-            ss.send(d);
+            ss.receive(recept);
+            String s2 = new String(receivedMessage);
+            StringTokenizer tk = new StringTokenizer(s2, " ");
+            int i = 0;
+            String newscore;
+            String strippedScore;
+            while (tk.hasMoreTokens() && i < scores.length) {
+                newscore = tk.nextToken();
+                strippedScore = newscore.substring(1, newscore.length() - 1);
+                if (i == scores.length - 1) {
+                    strippedScore = strippedScore.trim();
+                    strippedScore = strippedScore.substring(0, strippedScore.length() - 1);
+                }
+
+                scores[i++] = Double.parseDouble(strippedScore);
+            }
         } catch (IOException ex) {
             Logger.getLogger(MZCommunicator.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-
-    byte[] receivedMessage = new byte[longueur];
-    DatagramPacket recept = new DatagramPacket(receivedMessage, receivedMessage.length);
-
-    
-        try {
-            ss.receive(recept);
-        String s2 = new String(receivedMessage);
-        System.out.println(s2);
-        StringTokenizer tk = new StringTokenizer(s2, " ");
-        int i = 0;
-        String newscore;
-        String strippedScore;
-        while (tk.hasMoreTokens() && i < scores.length) {
-            newscore = tk.nextToken();
-            strippedScore = newscore.substring(1, newscore.length() - 1);
-            if (i == scores.length - 1) {
-                strippedScore = strippedScore.trim();
-                strippedScore = strippedScore.substring(0, strippedScore.length() - 1);
-            }
-
-            scores[i++] = Double.parseDouble(strippedScore);
-        }
     }
-    catch (IOException ex
-
-    
-        ) {
-            Logger.getLogger(MZCommunicator.class.getName()).log(Level.SEVERE, null, ex);
-    }
-
-}
 
 }

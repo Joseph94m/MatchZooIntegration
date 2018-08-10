@@ -14,11 +14,7 @@
             <version>4.11</version>
             <type>jar</type>
         </dependency>
-        <dependency>
-            <groupId>org.terrier</groupId>
-            <artifactId>terrier-core</artifactId>
-            <version>4.2</version>
-        </dependency>
+        
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-csv</artifactId>
@@ -34,6 +30,11 @@
             <groupId>org.deeplearning4j</groupId>
             <artifactId>deeplearning4j-modelimport</artifactId>
             <version>1.0.0-beta</version>
+        </dependency>
+        <dependency>
+            <groupId>org.terrier</groupId>
+            <artifactId>terrier-core</artifactId>
+            <version>4.2</version>
         </dependency>
     </dependencies>
     <build>
