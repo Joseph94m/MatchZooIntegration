@@ -5,6 +5,7 @@
  */
 package uk.ac.gla.dcs.dsms;
 
+import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
@@ -16,6 +17,7 @@ import org.terrier.matching.ResultSet;
 import org.terrier.matching.dsms.DocumentScoreModifier;
 import org.terrier.querying.parser.Query;
 import org.terrier.structures.Index;
+import org.terrier.structures.Lexicon;
 
 /**
  *
@@ -23,18 +25,24 @@ import org.terrier.structures.Index;
  */
 public class NeuralScoreModifier implements DocumentScoreModifier {
 
-    MZCommunicator mz;
+    private MZCommunicator mz;
 
     public NeuralScoreModifier() {
         System.out.println("NeuralScoreModifier started");
-       
+
         mz = new MZCommunicator(InetAddress.getLoopbackAddress());
     }
 
     @Override
     public boolean modifyScores(Index index, MatchingQueryTerms queryTerms, ResultSet resultSet) {
 
-        mz.contactMZ(queryTerms.getQueryId(), resultSet);
+        try {
+            mz.contactMZ(index, queryTerms.getQuery(), resultSet, queryTerms.getQueryId());
+        } catch (IOException ex) {
+            Logger.getLogger(NeuralScoreModifier.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
+        }
+
         return true;
     }
 

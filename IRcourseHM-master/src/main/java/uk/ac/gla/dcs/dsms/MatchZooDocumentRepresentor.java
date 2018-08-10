@@ -89,4 +89,55 @@ public class MatchZooDocumentRepresentor {
         }
     }
 
+    public String getRepresentation(int[] docids) throws IOException {
+        StringBuilder sb = new StringBuilder();;
+        IterablePosting postings;
+        int[] text;
+        int doc_length;
+        int term_id;
+        //Check if document is already present in the file. If yes, then skip doc.
+        for (int i = 0; i < docids.length; ++i) {
+            if (iterated[docids[i]] == true) {
+                continue;
+            }
+            //If document is not  in file, get the first @docSize tokens/words and append them to a string builder
+            iterated[docids[i]] = true;
+
+            PostingIndex<?> di = index.getDirectIndex();
+            DocumentIndex doi = index.getDocumentIndex();
+            doc_length = doi.getDocumentLength(docids[i]);
+
+            if (doc_length > docSize) {
+                text = new int[docSize];
+                doc_length = docSize;
+            } else {
+                text = new int[doc_length];
+            }
+
+            postings = di.getPostings(doi.getDocumentEntry(docids[i]));
+            while (postings.next() != IterablePosting.EOL) {
+                term_id = postings.getId();
+                int[] pos = ((BlockPosting) postings).getPositions();
+                for (int position : pos) {
+                    if (position < docSize) {
+                        text[position] = term_id;
+                    }
+                }
+
+            }
+            sb.append("D");
+            sb.append(docids[i]);
+            sb.append(" ");
+            sb.append(doc_length);
+            for (int t : text) {
+                sb.append(" ");
+                sb.append(t);
+            }
+            sb.append('\n');
+            //Append to file
+
+        }
+        return sb.toString();
+    }
+
 }
