@@ -31,7 +31,7 @@ public class MZCommunicator {
     private InetAddress server;
     private DatagramSocket ss = null;
     public static final int PORT_NUMBER = 6776;
-
+    public static final String ENCODING = "ISO-8859-1";
     public MZCommunicator(InetAddress host) {
         server = host;
         System.out.println(server);
@@ -61,7 +61,7 @@ public class MZCommunicator {
         String line = sb.toString();
         int length = line.length();
         byte[] message = new byte[length];
-        message = line.getBytes();
+        message = line.getBytes(ENCODING);
 
         DatagramPacket rel = new DatagramPacket(message, length, server, PORT_NUMBER);
         try {
@@ -95,7 +95,7 @@ public class MZCommunicator {
         line = sb.toString();
         length = line.length();
         message = new byte[length];
-        message = line.getBytes();
+        message = line.getBytes(ENCODING);
         DatagramPacket q = new DatagramPacket(message, length, server, PORT_NUMBER);
 
         byte[] tmpMessage = new byte[5];
@@ -112,7 +112,7 @@ public class MZCommunicator {
         line = "" + setSize;
         length = line.length();
         message = new byte[length];
-        message = line.getBytes();
+        message = line.getBytes(ENCODING);
         DatagramPacket size = new DatagramPacket(message, length, server, PORT_NUMBER);
         tmpRecept = new DatagramPacket(tmpMessage, tmpMessage.length);
         ss.receive(tmpRecept);
@@ -133,7 +133,7 @@ public class MZCommunicator {
         for (int i = 0; i < docs.length; ++i) {
             length = docs[i].length();
             message = new byte[length];
-            message = docs[i].getBytes();
+            message = docs[i].getBytes(ENCODING);
             DatagramPacket d = new DatagramPacket(message, length, server, PORT_NUMBER);
             tmpRecept = new DatagramPacket(tmpMessage, tmpMessage.length);
             ss.receive(tmpRecept);
