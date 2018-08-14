@@ -52,7 +52,7 @@ public class NeuralScoreModifier implements DocumentScoreModifier {
     }
 
     public Object clone() {
-        return null;
+        return new NeuralScoreModifier();
     }
 
 }

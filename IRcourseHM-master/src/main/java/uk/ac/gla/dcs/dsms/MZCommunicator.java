@@ -11,6 +11,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.nio.charset.CharsetEncoder;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,7 +30,7 @@ public class MZCommunicator {
 
     private InetAddress server;
     private DatagramSocket ss = null;
-    private static final int PORT_NUMBER = 6776;
+    public static final int PORT_NUMBER = 6776;
 
     public MZCommunicator(InetAddress host) {
         server = host;
@@ -57,12 +58,12 @@ public class MZCommunicator {
             sb.append('\n');
         }
 
-        String ligne = sb.toString();
-        int longueur = ligne.length();
-        byte[] message = new byte[longueur];
-        message = ligne.getBytes();
+        String line = sb.toString();
+        int length = line.length();
+        byte[] message = new byte[length];
+        message = line.getBytes();
 
-        DatagramPacket rel = new DatagramPacket(message, longueur, server, PORT_NUMBER);
+        DatagramPacket rel = new DatagramPacket(message, length, server, PORT_NUMBER);
         try {
             ss.send(rel);
         } catch (IOException ex) {
@@ -91,11 +92,11 @@ public class MZCommunicator {
             }
         }
 
-        ligne = sb.toString();
-        longueur = ligne.length();
-        message = new byte[longueur];
-        message = ligne.getBytes();
-        DatagramPacket q = new DatagramPacket(message, longueur, server, PORT_NUMBER);
+        line = sb.toString();
+        length = line.length();
+        message = new byte[length];
+        message = line.getBytes();
+        DatagramPacket q = new DatagramPacket(message, length, server, PORT_NUMBER);
 
         byte[] tmpMessage = new byte[5];
         DatagramPacket tmpRecept = new DatagramPacket(tmpMessage, tmpMessage.length);
@@ -108,11 +109,11 @@ public class MZCommunicator {
         }
 
         int setSize = docids.length;
-        ligne = "" + setSize;
-        longueur = ligne.length();
-        message = new byte[longueur];
-        message = ligne.getBytes();
-        DatagramPacket size = new DatagramPacket(message, longueur, server, PORT_NUMBER);
+        line = "" + setSize;
+        length = line.length();
+        message = new byte[length];
+        message = line.getBytes();
+        DatagramPacket size = new DatagramPacket(message, length, server, PORT_NUMBER);
         tmpRecept = new DatagramPacket(tmpMessage, tmpMessage.length);
         ss.receive(tmpRecept);
         try {
@@ -130,10 +131,10 @@ public class MZCommunicator {
         String[] docs = mzdr.getRepresentation(docids);
 
         for (int i = 0; i < docs.length; ++i) {
-            longueur = docs[i].length();
-            message = new byte[longueur];
+            length = docs[i].length();
+            message = new byte[length];
             message = docs[i].getBytes();
-            DatagramPacket d = new DatagramPacket(message, longueur, server, PORT_NUMBER);
+            DatagramPacket d = new DatagramPacket(message, length, server, PORT_NUMBER);
             tmpRecept = new DatagramPacket(tmpMessage, tmpMessage.length);
             ss.receive(tmpRecept);
             try {
