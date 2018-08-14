@@ -149,7 +149,7 @@ public class MZCommunicator {
 
         try {
             ss.receive(recept);
-            String s2 = new String(receivedMessage);
+            String s2 = new String(receivedMessage,ENCODING);
             StringTokenizer tk = new StringTokenizer(s2, " ");
             int i = 0;
             String newscore;
