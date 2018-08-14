@@ -31,7 +31,7 @@ public class MZCommunicator {
     private InetAddress server;
     private DatagramSocket ss = null;
     public static final int PORT_NUMBER = 6776;
-    public static final String ENCODING = "ISO-8859-1";
+    public static final String ENCODING = "UTF-8";
     public MZCommunicator(InetAddress host) {
         server = host;
         System.out.println(server);
@@ -162,7 +162,8 @@ public class MZCommunicator {
                     strippedScore = strippedScore.substring(0, strippedScore.length() - 1);
                 }
 
-                scores[i++] = Double.parseDouble(strippedScore);
+                scores[i] = scores[i] + Double.parseDouble(strippedScore);
+                ++i;
             }
         } catch (IOException ex) {
             Logger.getLogger(MZCommunicator.class.getName()).log(Level.SEVERE, null, ex);
