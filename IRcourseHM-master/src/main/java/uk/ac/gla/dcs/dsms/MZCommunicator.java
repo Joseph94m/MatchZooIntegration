@@ -5,18 +5,18 @@
  */
 package uk.ac.gla.dcs.dsms;
 
+import java.io.*;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.Socket;
 import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.nio.charset.CharsetEncoder;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.deeplearning4j.nn.modelimport.keras.exceptions.InvalidKerasConfigurationException;
-import org.deeplearning4j.nn.modelimport.keras.exceptions.UnsupportedKerasConfigurationException;
 import org.terrier.matching.ResultSet;
 import org.terrier.querying.parser.Query;
 import org.terrier.structures.Index;
@@ -29,20 +29,29 @@ import org.terrier.structures.Lexicon;
 public class MZCommunicator {
 
     private InetAddress server;
-    private DatagramSocket ss = null;
     public static final int PORT_NUMBER = 6776;
     public static final String ENCODING = "UTF-8";
+    private Socket clientSocket;
+
     public MZCommunicator(InetAddress host) {
         server = host;
         System.out.println(server);
-        try {
-            ss = new DatagramSocket();
-        } catch (SocketException ex) {
-            Logger.getLogger(MZCommunicator.class.getName()).log(Level.SEVERE, null, ex);
-        }
+
     }
 
     public void contactMZ(Index index, Query query, ResultSet resultSet, String queryID) throws IOException {
+
+        try {
+            clientSocket = new Socket(server.getHostName(), PORT_NUMBER);
+            System.out.println(server.getHostName());
+        } catch (SocketException ex) {
+            Logger.getLogger(MZCommunicator.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(MZCommunicator.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
+        BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
         Lexicon<String> lex = index.getLexicon();
         int[] docids = resultSet.getDocids();
         double[] scores = resultSet.getScores();
@@ -59,17 +68,8 @@ public class MZCommunicator {
         }
 
         String line = sb.toString();
-        int length = line.length();
-        byte[] message = new byte[length];
-        message = line.getBytes(ENCODING);
-
-        DatagramPacket rel = new DatagramPacket(message, length, server, PORT_NUMBER);
-        try {
-            ss.send(rel);
-        } catch (IOException ex) {
-            Logger.getLogger(MZCommunicator.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
+        outToServer.write(line.getBytes(ENCODING));
+        String fromServer = inFromServer.readLine();
         sb = new StringBuilder();
         sb.append("Q");
         sb.append(queryID);
@@ -93,34 +93,10 @@ public class MZCommunicator {
         }
 
         line = sb.toString();
-        length = line.length();
-        message = new byte[length];
-        message = line.getBytes(ENCODING);
-        DatagramPacket q = new DatagramPacket(message, length, server, PORT_NUMBER);
-
-        byte[] tmpMessage = new byte[5];
-        DatagramPacket tmpRecept = new DatagramPacket(tmpMessage, tmpMessage.length);
-        ss.receive(tmpRecept);
-
-        try {
-            ss.send(q);
-        } catch (IOException ex) {
-            Logger.getLogger(MZCommunicator.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
+        outToServer.write(line.getBytes(ENCODING));
+        fromServer = inFromServer.readLine();
         int setSize = docids.length;
         line = "" + setSize;
-        length = line.length();
-        message = new byte[length];
-        message = line.getBytes(ENCODING);
-        DatagramPacket size = new DatagramPacket(message, length, server, PORT_NUMBER);
-        tmpRecept = new DatagramPacket(tmpMessage, tmpMessage.length);
-        ss.receive(tmpRecept);
-        try {
-            ss.send(size);
-        } catch (IOException ex) {
-            Logger.getLogger(MZCommunicator.class.getName()).log(Level.SEVERE, null, ex);
-        }
 
         MatchZooDocumentRepresentor mzdr = new MatchZooDocumentRepresentor(
                 index,
@@ -129,44 +105,28 @@ public class MZCommunicator {
                 new boolean[index.getDocumentIndex().getNumberOfDocuments()]);
 
         String[] docs = mzdr.getRepresentation(docids);
-
+        outToServer.write(line.getBytes(ENCODING));
         for (int i = 0; i < docs.length; ++i) {
-            length = docs[i].length();
-            message = new byte[length];
-            message = docs[i].getBytes(ENCODING);
-            DatagramPacket d = new DatagramPacket(message, length, server, PORT_NUMBER);
-            tmpRecept = new DatagramPacket(tmpMessage, tmpMessage.length);
-            ss.receive(tmpRecept);
-            try {
-                ss.send(d);
-            } catch (IOException ex) {
-                Logger.getLogger(MZCommunicator.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            fromServer = inFromServer.readLine();
+            outToServer.write(docs[i].getBytes(ENCODING));
+
         }
-
-        byte[] receivedMessage = new byte[50000];
-        DatagramPacket recept = new DatagramPacket(receivedMessage, receivedMessage.length);
-
-        try {
-            ss.receive(recept);
-            String s2 = new String(receivedMessage,ENCODING);
-            StringTokenizer tk = new StringTokenizer(s2, " ");
-            int i = 0;
-            String newscore;
-            String strippedScore;
-            while (tk.hasMoreTokens() && i < scores.length) {
-                newscore = tk.nextToken();
-                strippedScore = newscore.substring(1, newscore.length() - 1);
-                if (i == scores.length - 1) {
-                    strippedScore = strippedScore.trim();
-                    strippedScore = strippedScore.substring(0, strippedScore.length() - 1);
-                }
-
-                scores[i] = scores[i] + Double.parseDouble(strippedScore);
-                ++i;
+        fromServer = inFromServer.readLine();
+        String s2 = fromServer;
+        StringTokenizer tk = new StringTokenizer(s2, " ");
+        int i = 0;
+        String newscore;
+        String strippedScore;
+        while (tk.hasMoreTokens() && i < scores.length) {
+            newscore = tk.nextToken();
+            strippedScore = newscore.substring(1, newscore.length() - 1);
+            if (i == scores.length - 1) {
+                strippedScore = strippedScore.trim();
+                strippedScore = strippedScore.substring(0, strippedScore.length() - 1);
             }
-        } catch (IOException ex) {
-            Logger.getLogger(MZCommunicator.class.getName()).log(Level.SEVERE, null, ex);
+
+            scores[i] = Double.parseDouble(strippedScore); // + scores[i];
+            ++i;
         }
 
     }
