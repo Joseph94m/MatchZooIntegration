@@ -30,19 +30,30 @@ import org.terrier.utility.ArrayUtils;
  */
 public class MZCommunicator {
 
-    private InetAddress server;
-    public static final int PORT_NUMBER = 6776;
     public static final String ENCODING = "UTF-8";
     private Socket clientSocket;
     private final double alpha;
+    private final String serverName;
+    private final int serverPort;
 
-    public MZCommunicator(InetAddress host) {
-        server = host;
-        System.out.println(server);
+    public MZCommunicator() {
+        
         String[] coeff
                 = ArrayUtils.parseCommaDelimitedString(
                         ApplicationSetup.getProperty("neural.modifier.alpha", ""));
         alpha = Double.parseDouble(coeff[0]);
+        
+                String[] name
+                = ArrayUtils.parseCommaDelimitedString(
+                        ApplicationSetup.getProperty("neural.server.name", ""));
+        serverName = name[0];
+        
+                String[] port
+                = ArrayUtils.parseCommaDelimitedString(
+                        ApplicationSetup.getProperty("neural.server.port", ""));
+        serverPort = Integer.parseInt(port[0]);
+        System.out.println(serverName);
+        System.out.println(serverPort);
         System.out.println(alpha);
 
     }
@@ -50,8 +61,7 @@ public class MZCommunicator {
     public void contactMZ(Index index, Query query, ResultSet resultSet, String queryID) throws IOException {
 
         try {
-            clientSocket = new Socket(server.getHostName(), PORT_NUMBER);
-            System.out.println(server.getHostName());
+            clientSocket = new Socket(serverName, serverPort);
         } catch (SocketException ex) {
             Logger.getLogger(MZCommunicator.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
@@ -59,12 +69,22 @@ public class MZCommunicator {
         }
 
         DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
-        BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+        BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream(),ENCODING));
+        
         Lexicon<String> lex = index.getLexicon();
         int[] docids = resultSet.getDocids();
 
         double[] scores = resultSet.getScores();
         StringBuilder sb = new StringBuilder();
+
+//        if (docids.length > 1000) {
+//            int messageNumber = docids.length / 1000;
+//            String msg = "" + messageNumber;
+//            outToServer.write(msg.getBytes(ENCODING));
+//            String fromServer = inFromServer.readLine();
+//            
+//        }
+
         for (int i = 0; i < docids.length; ++i) {
             sb.append(scores[i]);
             sb.append(" ");
@@ -79,6 +99,7 @@ public class MZCommunicator {
         String line = sb.toString();
         outToServer.write(line.getBytes(ENCODING));
         String fromServer = inFromServer.readLine();
+        
         sb = new StringBuilder();
         sb.append("Q");
         sb.append(queryID);
@@ -135,7 +156,9 @@ public class MZCommunicator {
                 strippedScore = strippedScore.substring(0, strippedScore.length() - 1);
             }
 
-            scores[i] = (alpha)*Double.parseDouble(strippedScore) + (1-alpha) * scores[i];
+            
+            
+            scores[i] = (alpha) * Double.parseDouble(strippedScore) + (1 - alpha) * scores[i];
             ++i;
         }
 

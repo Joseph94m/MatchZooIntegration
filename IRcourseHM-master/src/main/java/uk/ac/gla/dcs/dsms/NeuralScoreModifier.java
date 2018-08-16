@@ -30,7 +30,7 @@ public class NeuralScoreModifier implements DocumentScoreModifier {
     public NeuralScoreModifier() {
         System.out.println("NeuralScoreModifier started");
 
-        mz = new MZCommunicator(InetAddress.getLoopbackAddress());
+        mz = new MZCommunicator();
     }
 
     @Override
