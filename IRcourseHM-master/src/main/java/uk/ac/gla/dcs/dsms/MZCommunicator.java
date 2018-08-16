@@ -21,6 +21,8 @@ import org.terrier.matching.ResultSet;
 import org.terrier.querying.parser.Query;
 import org.terrier.structures.Index;
 import org.terrier.structures.Lexicon;
+import org.terrier.utility.ApplicationSetup;
+import org.terrier.utility.ArrayUtils;
 
 /**
  *
@@ -32,10 +34,16 @@ public class MZCommunicator {
     public static final int PORT_NUMBER = 6776;
     public static final String ENCODING = "UTF-8";
     private Socket clientSocket;
+    private final double alpha;
 
     public MZCommunicator(InetAddress host) {
         server = host;
         System.out.println(server);
+        String[] coeff
+                = ArrayUtils.parseCommaDelimitedString(
+                        ApplicationSetup.getProperty("neural.modifier.alpha", ""));
+        alpha = Double.parseDouble(coeff[0]);
+        System.out.println(alpha);
 
     }
 
@@ -54,6 +62,7 @@ public class MZCommunicator {
         BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
         Lexicon<String> lex = index.getLexicon();
         int[] docids = resultSet.getDocids();
+
         double[] scores = resultSet.getScores();
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < docids.length; ++i) {
@@ -96,8 +105,8 @@ public class MZCommunicator {
         outToServer.write(line.getBytes(ENCODING));
         fromServer = inFromServer.readLine();
         int setSize = docids.length;
-        line = "" + setSize;
 
+        line = "" + setSize;
         MatchZooDocumentRepresentor mzdr = new MatchZooDocumentRepresentor(
                 index,
                 null,
@@ -106,6 +115,7 @@ public class MZCommunicator {
 
         String[] docs = mzdr.getRepresentation(docids);
         outToServer.write(line.getBytes(ENCODING));
+
         for (int i = 0; i < docs.length; ++i) {
             fromServer = inFromServer.readLine();
             outToServer.write(docs[i].getBytes(ENCODING));
@@ -125,7 +135,7 @@ public class MZCommunicator {
                 strippedScore = strippedScore.substring(0, strippedScore.length() - 1);
             }
 
-            scores[i] = Double.parseDouble(strippedScore); // + scores[i];
+            scores[i] = (alpha)*Double.parseDouble(strippedScore) + (1-alpha) * scores[i];
             ++i;
         }
 
