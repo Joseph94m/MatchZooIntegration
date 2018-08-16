@@ -9,9 +9,6 @@ import java.io.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.StringTokenizer;
@@ -37,18 +34,21 @@ public class MZCommunicator {
     private final int serverPort;
 
     public MZCommunicator() {
-        
+
+        //get the coefficiant rate for the reranking
         String[] coeff
                 = ArrayUtils.parseCommaDelimitedString(
                         ApplicationSetup.getProperty("neural.modifier.alpha", ""));
         alpha = Double.parseDouble(coeff[0]);
-        
-                String[] name
+
+        //name of server that does the predicitons
+        String[] name
                 = ArrayUtils.parseCommaDelimitedString(
                         ApplicationSetup.getProperty("neural.server.name", ""));
         serverName = name[0];
-        
-                String[] port
+
+        //port
+        String[] port
                 = ArrayUtils.parseCommaDelimitedString(
                         ApplicationSetup.getProperty("neural.server.port", ""));
         serverPort = Integer.parseInt(port[0]);
@@ -69,23 +69,47 @@ public class MZCommunicator {
         }
 
         DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
-        BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream(),ENCODING));
-        
+        BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream(), ENCODING));
+
         Lexicon<String> lex = index.getLexicon();
         int[] docids = resultSet.getDocids();
 
         double[] scores = resultSet.getScores();
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb;
 
-//        if (docids.length > 1000) {
-//            int messageNumber = docids.length / 1000;
-//            String msg = "" + messageNumber;
-//            outToServer.write(msg.getBytes(ENCODING));
-//            String fromServer = inFromServer.readLine();
-//            
-//        }
+        
+        
+        //send score Qid DocId to server in batches of 1000
+        int numberOfBatches = 1;
+        if (docids.length > 1000) {
+            numberOfBatches = docids.length / 1000;
+            ++numberOfBatches;
+        }
+        String msg = "" + numberOfBatches;
+        outToServer.write(msg.getBytes(ENCODING));
+        String fromServer = inFromServer.readLine();
+        for (int j = 0; j < numberOfBatches - 1; ++j) {
+            sb = new StringBuilder();
+            for (int i = j * 1000; i < (j + 1) * 1000 ; ++i) {
+                sb.append(scores[i]);
+                sb.append(" ");
+                sb.append("Q");
+                sb.append(queryID);
+                sb.append(" ");
+                sb.append("D");
+                sb.append(docids[i]);
+                sb.append('\n');
+            }
 
-        for (int i = 0; i < docids.length; ++i) {
+            String line = sb.toString();
+            outToServer.write(line.getBytes(ENCODING));
+            fromServer = inFromServer.readLine();
+        }
+
+        sb = new StringBuilder();
+        //send last incomplete batch
+        for (int i = (numberOfBatches - 1) * 1000; i < docids.length ; ++i) {
+           
             sb.append(scores[i]);
             sb.append(" ");
             sb.append("Q");
@@ -95,11 +119,12 @@ public class MZCommunicator {
             sb.append(docids[i]);
             sb.append('\n');
         }
-
+        sb.append('\n');
         String line = sb.toString();
         outToServer.write(line.getBytes(ENCODING));
-        String fromServer = inFromServer.readLine();
-        
+        fromServer = inFromServer.readLine();
+
+        //send query representation : Qid WordId1 WordId2 ...
         sb = new StringBuilder();
         sb.append("Q");
         sb.append(queryID);
@@ -127,6 +152,8 @@ public class MZCommunicator {
         fromServer = inFromServer.readLine();
         int setSize = docids.length;
 
+        
+        //get representation for each document
         line = "" + setSize;
         MatchZooDocumentRepresentor mzdr = new MatchZooDocumentRepresentor(
                 index,
@@ -137,11 +164,13 @@ public class MZCommunicator {
         String[] docs = mzdr.getRepresentation(docids);
         outToServer.write(line.getBytes(ENCODING));
 
+        //send document representation one by one
         for (int i = 0; i < docs.length; ++i) {
             fromServer = inFromServer.readLine();
             outToServer.write(docs[i].getBytes(ENCODING));
 
         }
+        //receive scores as one batch
         fromServer = inFromServer.readLine();
         String s2 = fromServer;
         StringTokenizer tk = new StringTokenizer(s2, " ");
@@ -156,8 +185,6 @@ public class MZCommunicator {
                 strippedScore = strippedScore.substring(0, strippedScore.length() - 1);
             }
 
-            
-            
             scores[i] = (alpha) * Double.parseDouble(strippedScore) + (1 - alpha) * scores[i];
             ++i;
         }
