@@ -35,9 +35,8 @@ public class NeuralScoreModifier implements DocumentScoreModifier {
 
     @Override
     public boolean modifyScores(Index index, MatchingQueryTerms queryTerms, ResultSet resultSet) {
-
         try {
-            mz.contactMZ(index, queryTerms.getQuery(), resultSet, queryTerms.getQueryId());
+            mz.contactMZ(index, queryTerms, resultSet);
         } catch (IOException ex) {
             Logger.getLogger(NeuralScoreModifier.class.getName()).log(Level.SEVERE, null, ex);
             return false;

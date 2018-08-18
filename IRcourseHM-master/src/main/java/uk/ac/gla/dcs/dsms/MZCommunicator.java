@@ -14,6 +14,7 @@ import java.net.SocketException;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.terrier.matching.MatchingQueryTerms;
 import org.terrier.matching.ResultSet;
 import org.terrier.querying.parser.Query;
 import org.terrier.structures.Index;
@@ -34,7 +35,6 @@ public class MZCommunicator {
     private final int serverPort;
 
     public MZCommunicator() {
-
         //get the coefficiant rate for the reranking
         String[] coeff
                 = ArrayUtils.parseCommaDelimitedString(
@@ -58,7 +58,7 @@ public class MZCommunicator {
 
     }
 
-    public void contactMZ(Index index, Query query, ResultSet resultSet, String queryID) throws IOException {
+    public void contactMZ(Index index, MatchingQueryTerms query, ResultSet resultSet) throws IOException {
 
         try {
             clientSocket = new Socket(serverName, serverPort);
@@ -68,17 +68,20 @@ public class MZCommunicator {
             Logger.getLogger(MZCommunicator.class.getName()).log(Level.SEVERE, null, ex);
         }
 
+        
+        
+        
         DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
         BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream(), ENCODING));
 
         Lexicon<String> lex = index.getLexicon();
         int[] docids = resultSet.getDocids();
-
+       
+        int numberOfDocuments =  index.getCollectionStatistics().getNumberOfDocuments();
+        System.out.println(numberOfDocuments);
         double[] scores = resultSet.getScores();
         StringBuilder sb;
 
-        
-        
         //send score Qid DocId to server in batches of 1000
         int numberOfBatches = 1;
         if (docids.length > 1000) {
@@ -90,11 +93,11 @@ public class MZCommunicator {
         String fromServer = inFromServer.readLine();
         for (int j = 0; j < numberOfBatches - 1; ++j) {
             sb = new StringBuilder();
-            for (int i = j * 1000; i < (j + 1) * 1000 ; ++i) {
+            for (int i = j * 1000; i < (j + 1) * 1000; ++i) {
                 sb.append(scores[i]);
                 sb.append(" ");
                 sb.append("Q");
-                sb.append(queryID);
+                sb.append(query.getQueryId());
                 sb.append(" ");
                 sb.append("D");
                 sb.append(docids[i]);
@@ -108,12 +111,12 @@ public class MZCommunicator {
 
         sb = new StringBuilder();
         //send last incomplete batch
-        for (int i = (numberOfBatches - 1) * 1000; i < docids.length ; ++i) {
-           
+        for (int i = (numberOfBatches - 1) * 1000; i < docids.length; ++i) {
+
             sb.append(scores[i]);
             sb.append(" ");
             sb.append("Q");
-            sb.append(queryID);
+            sb.append(query.getQueryId());
             sb.append(" ");
             sb.append("D");
             sb.append(docids[i]);
@@ -122,15 +125,16 @@ public class MZCommunicator {
         sb.append('\n');
         String line = sb.toString();
         outToServer.write(line.getBytes(ENCODING));
+        System.out.println(inFromServer.toString());
         fromServer = inFromServer.readLine();
 
         //send query representation : Qid WordId1 WordId2 ...
         sb = new StringBuilder();
         sb.append("Q");
-        sb.append(queryID);
+        sb.append(query.getQueryId());
         sb.append(" ");
         int count_tokens = 0;
-        String[] query_terms = query.toString().split(" ");
+        String[] query_terms = query.getTerms();
         for (String s : query_terms) {
 
             if (lex.getLexiconEntry(s) != null) {
@@ -152,14 +156,10 @@ public class MZCommunicator {
         fromServer = inFromServer.readLine();
         int setSize = docids.length;
 
-        
         //get representation for each document
         line = "" + setSize;
-        MatchZooDocumentRepresentor mzdr = new MatchZooDocumentRepresentor(
-                index,
-                null,
-                254,
-                new boolean[index.getDocumentIndex().getNumberOfDocuments()]);
+        System.out.println(index);
+        MatchZooDocumentRepresentor mzdr = new MatchZooDocumentRepresentor(index, null, 254, new boolean[numberOfDocuments]);
 
         String[] docs = mzdr.getRepresentation(docids);
         outToServer.write(line.getBytes(ENCODING));

@@ -108,6 +108,7 @@ public class MatchZooDocumentRepresentor {
             DocumentIndex doi = index.getDocumentIndex();
             doc_length = doi.getDocumentLength(docids[i]);
 
+            
             if (doc_length > docSize) {
                 text = new int[docSize];
                 doc_length = docSize;
