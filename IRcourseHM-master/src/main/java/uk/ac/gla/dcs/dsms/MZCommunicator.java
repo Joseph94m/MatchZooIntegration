@@ -78,7 +78,6 @@ public class MZCommunicator {
         int[] docids = resultSet.getDocids();
        
         int numberOfDocuments =  index.getCollectionStatistics().getNumberOfDocuments();
-        System.out.println(numberOfDocuments);
         double[] scores = resultSet.getScores();
         StringBuilder sb;
 
@@ -125,7 +124,6 @@ public class MZCommunicator {
         sb.append('\n');
         String line = sb.toString();
         outToServer.write(line.getBytes(ENCODING));
-        System.out.println(inFromServer.toString());
         fromServer = inFromServer.readLine();
 
         //send query representation : Qid WordId1 WordId2 ...
@@ -158,7 +156,6 @@ public class MZCommunicator {
 
         //get representation for each document
         line = "" + setSize;
-        System.out.println(index);
         MatchZooDocumentRepresentor mzdr = new MatchZooDocumentRepresentor(index, null, 254, new boolean[numberOfDocuments]);
 
         String[] docs = mzdr.getRepresentation(docids);
