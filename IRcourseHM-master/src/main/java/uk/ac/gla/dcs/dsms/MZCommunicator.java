@@ -30,29 +30,46 @@ public class MZCommunicator {
 
     public static final String ENCODING = "UTF-8";
     private Socket clientSocket;
-    private final double alpha;
-    private final String serverName;
-    private final int serverPort;
+    private double alpha;
+    private String serverName;
+    private int serverPort;
+    private Index specifiedIndex = null;
 
     public MZCommunicator() {
         //get the coefficiant rate for the reranking
+        alpha = 1;
+        serverName = "localhost";
+        serverPort = 6776;
         String[] coeff
                 = ArrayUtils.parseCommaDelimitedString(
                         ApplicationSetup.getProperty("neural.modifier.alpha", ""));
-        alpha = Double.parseDouble(coeff[0]);
+        if (coeff.length > 0) {
+            alpha = Double.parseDouble(coeff[0]);
+        }
 
         //name of server that does the predicitons
         String[] name
                 = ArrayUtils.parseCommaDelimitedString(
                         ApplicationSetup.getProperty("neural.server.name", ""));
-        serverName = name[0];
-
+        if (name.length > 0) {
+            serverName = name[0];
+        }
         //port
         String[] port
                 = ArrayUtils.parseCommaDelimitedString(
                         ApplicationSetup.getProperty("neural.server.port", ""));
-        serverPort = Integer.parseInt(port[0]);
-        System.out.println(serverName);
+        if (port.length > 0) {
+            serverPort = Integer.parseInt(port[0]);
+        }
+        String[] ind
+                = ArrayUtils.parseCommaDelimitedString(
+                        ApplicationSetup.getProperty("neural.modifier.index", ""));
+        if (ind.length > 0) {
+            String indexPath = ind[0];
+            specifiedIndex = Index.createIndex(indexPath, "data");
+            System.out.println("Index obtained");
+        }
+
         System.out.println(serverPort);
         System.out.println(alpha);
 
@@ -68,16 +85,18 @@ public class MZCommunicator {
             Logger.getLogger(MZCommunicator.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        
-        
-        
+        if (index.getDocumentIndex() == null) {
+            System.out.println("Is null");
+            index = specifiedIndex;
+        }
+
         DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
         BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream(), ENCODING));
 
         Lexicon<String> lex = index.getLexicon();
         int[] docids = resultSet.getDocids();
-       
-        int numberOfDocuments =  index.getCollectionStatistics().getNumberOfDocuments();
+
+        int numberOfDocuments = index.getCollectionStatistics().getNumberOfDocuments();
         double[] scores = resultSet.getScores();
         StringBuilder sb;
 
